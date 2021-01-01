@@ -2,7 +2,7 @@
 import uuid
 from http.client import BAD_REQUEST, CREATED, OK, NOT_FOUND, INTERNAL_SERVER_ERROR
 
-from app import app, db, request, jsonify, log
+from app import app, db, request, log
 from models import Goods
 
 

@@ -13,11 +13,11 @@ install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
 
-migration_init:
+db_migration_init:
 	# database initialization
 	python migration.py db init
 
-migration:
+db_migration:
 	# running the migrate command
 	python migration.py test migrate
 
@@ -31,9 +31,13 @@ test:
 lint:
 	# See local hadolint install instructions:   https://github.com/hadolint/hadolint
 	# This is linter for Dockerfiles
-	# hadolint Dockerfile
+	hadolint Dockerfile
+
 	# This is a linter for Python source code linter: https://www.pylint.org/
 	# This should be run from inside a virtualenv
-	pylint --disable=R,C,W1203,W1309 goods.py
+	# W1203: Use lazy % formatting in logging functions (logging-fstring-interpolation)
+	# W0611: unused-import
+	# W0703: Catching too general exception Exception (broad-except)
+	pylint --disable=R,C,W1203,W0611,W0703 --load-plugins=pylint_flask_sqlalchemy *.py
 
 all: install lint test
