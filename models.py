@@ -1,14 +1,7 @@
 import uuid
-import json
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID, MONEY
-from config import Config
-
-app = Flask('__main__')
-app.config.from_object(Config())
-db = SQLAlchemy(app)
+from app import db, log
 
 
 class Goods(db.Model):

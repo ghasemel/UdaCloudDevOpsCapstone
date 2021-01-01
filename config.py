@@ -1,4 +1,3 @@
-import os
 from configparser import ConfigParser
 
 
@@ -6,7 +5,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = None
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    def __init__(self, filename='database.ini', section='postgresql'):
+    def __init__(self, filename='database.ini', section='db-prod'):
         # create a parser
         parser = ConfigParser()
         # read config file
@@ -28,4 +27,4 @@ class Config(object):
         port = db["port"]
 
         # postgres://{user}:{password}@{hostname}:{port}/{database-name}
-        self.SQLALCHEMY_DATABASE_URI = f"postgres://{user}:{password}@{hostname}:{port}/{database}"
+        self.SQLALCHEMY_DATABASE_URI = f"postgresql://{user}:{password}@{hostname}:{port}/{database}"

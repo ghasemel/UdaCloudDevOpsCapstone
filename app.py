@@ -3,52 +3,24 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask.logging import create_logger
 import logging
+import sys
 
 from config import Config
-from models import Goods
+
+
+mode = 'test'
+if len(sys.argv) > 1:
+    mode = sys.argv[1]
+
+print(f"mode: {mode}")
+
+db_config = 'postgresql-test'
+if mode == 'prod':
+    db_config = 'postgresql-prod'
 
 app = Flask(__name__)
-app.config.from_object(Config())
+app.config.from_object(Config(section=db_config))
 db = SQLAlchemy(app)
 
 log = create_logger(app)
 log.setLevel(logging.DEBUG)
-
-
-@app.route('/health')
-def health_status():
-    return {"status": "OK"}
-
-
-@app.route('/api/v1/goods', methods=['POST'])
-def add():
-    """ add a new merchandise """
-    if request.method == 'POST':
-        merchandise = request.json
-        log.debug(f"insert merchandise: {merchandise}")
-
-        new_merchandise = Goods(
-            name=merchandise["name"],
-            description=merchandise["description"],
-            stock=merchandise["stock"],
-            price=merchandise["price"]
-        )
-        log.debug(f"json merchandise successfully decoded to object: {new_merchandise.json()}")
-
-        db.session.add(new_merchandise)
-        log.debug("merchandise successfully added to session")
-
-        db.session.commit()
-
-        log.debug(f"add merchandise with id: {new_merchandise.id}")
-
-        return new_merchandise.json()
-
-
-@app.route('/<name>')
-def hello_name(name):
-    return "Hello {}!".format(name)
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80, debug=True)
