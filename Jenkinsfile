@@ -13,7 +13,9 @@ ls -lah
 make setup
 . .venv/bin/activate
 ''', label: 'setup virtual environment')
-        sh 'make install'
+        sh '''ls -la
+. .venv/bin/activate
+make install'''
       }
     }
 
