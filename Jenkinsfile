@@ -5,7 +5,7 @@ pipeline {
       agent {
         docker {
           image 'python:3.7.9'
-          args '-v $HOME/cache/UdacityDevOpsCapstone:/tmp/.venv'
+          //args '-v $HOME/cache/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/.venv'
         }
 
       }
@@ -14,11 +14,11 @@ pipeline {
           pwd
           ls -la
           make setup
-          . /tmp/.venv/bin/activate
+          . .venv/bin/activate
           ''', label: 'setup virtual environment')
         sh(script: '''
             ls -la
-            . /tmp/.venv/bin/activate
+            . .venv/bin/activate
             make install''', label: 'install requirements')
         //sleep(unit: 'HOURS', time: 1)
       }
@@ -31,10 +31,12 @@ pipeline {
         }
 
       }
+
       steps {
+        sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           ls -la
-          . /tmp/.venv/bin/activate
+          . .venv/bin/activate
           make lint
           ''', label: 'lint')
       }

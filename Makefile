@@ -1,10 +1,10 @@
 
 setup:
 	# Create python virtualenv & source it
-	python3 -m venv /tmp/.venv
+	python3 -m venv .venv
 
 	# source it
-	. /tmp/.venv/bin/activate
+	. .venv/bin/activate
 
 refresh_requirements:
 	# to create/update the file
