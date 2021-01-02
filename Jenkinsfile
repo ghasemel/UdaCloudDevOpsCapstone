@@ -8,7 +8,9 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh(script: '''pwd
+        sh(script: '''
+        python --version
+        pwd
 ls -la
 make setup
 . .venv/bin/activate
