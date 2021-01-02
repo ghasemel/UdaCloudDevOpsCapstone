@@ -8,7 +8,8 @@ pipeline {
   stages {
     stage('setup-env') {
       steps {
-        sh '''pwd
+        sh '''# setup virtual environment
+pwd
 ls -la
 make setup
 . .venv/bin/activate
