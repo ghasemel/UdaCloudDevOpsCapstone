@@ -9,7 +9,7 @@ pipeline {
     stage('setup-env') {
       steps {
         sh script: '''pwd
-ls -la
+ls -lah
 make setup
 . .venv/bin/activate
 make install''', label: "setup virtual environment"
