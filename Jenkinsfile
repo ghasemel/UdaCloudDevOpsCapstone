@@ -8,9 +8,9 @@ pipeline {
   stages {
     stage('setup-env') {
       steps {
-        sh '''ls
-python3 -m venv .venv
-. .venv/bin/activate
+        sh '''pwd
+ls -la
+make setup
 make install'''
       }
     }
