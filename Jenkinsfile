@@ -6,18 +6,13 @@ pipeline {
 
   }
   stages {
-    stage('setup-env') {
+    stage('build') {
       steps {
         sh(script: '''pwd
 ls -lah
 make setup
 . .venv/bin/activate
 ''', label: 'setup virtual environment')
-      }
-    }
-
-    stage('error') {
-      steps {
         sh 'make install'
       }
     }
