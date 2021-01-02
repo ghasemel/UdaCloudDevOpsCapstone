@@ -9,9 +9,9 @@ pipeline {
     stage('install') {
       steps {
         sh '''ls
-python3 -m venv .venv
-source .venv/bin/activate
-make install'''
+#python3 -m venv .venv
+#source .venv/bin/activate
+sudo make install'''
       }
     }
 
