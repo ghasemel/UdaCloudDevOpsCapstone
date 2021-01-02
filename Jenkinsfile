@@ -4,12 +4,13 @@ pipeline {
     stage('build') {
       agent {
         docker {
-          image 'python:3.7.9'
+          image 'python:3.7.9-alpine'
           //args '-v $HOME/cache/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/.venv'
         }
 
       }
       steps {
+        sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           pwd
           ls -la
@@ -20,7 +21,7 @@ pipeline {
             ls -la
             . .venv/bin/activate
             make install''', label: 'install requirements')
-        //sleep(unit: 'HOURS', time: 1)
+
       }
     }
 
