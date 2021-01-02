@@ -9,7 +9,7 @@ pipeline {
     stage('build') {
       steps {
         sh(script: '''pwd
-ls -lah
+ls -la
 make setup
 . .venv/bin/activate
 ''', label: 'setup virtual environment')
@@ -19,6 +19,17 @@ make setup
 make install''', label: 'install requirements')
       }
     }
+    stage('lint') {
+      steps {
+        sh(script: '''
+ls -la
+. .venv/bin/activate
+make lint
+''', label: 'lint')
+
+      }
+    }
+
 
   }
 }
