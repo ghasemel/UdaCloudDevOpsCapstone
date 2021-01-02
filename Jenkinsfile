@@ -48,7 +48,14 @@ pipeline {
     stage('test') {
       steps {
         sh(script: '''
-          echo $UDA_DB_HOST_PROD
+          echo "[postgresql-test]" > database.ini
+          echo "host=$UDA_DB_HOST_TEST" >> database.ini
+          echo "database=$UDA_DB_NAME" >> database.ini
+          echo "user=$UDA_DB_USER_TEST" >> database.ini
+          echo "password=$UDA_DB_PASS_TEST" >> database.ini
+          echo "port=$UDA_DB_PORT_TEST" >> database.ini
+          pwd
+          cat database.ini
           ''', label: 'Setup test database configuration')
 
         //sleep(unit: 'HOURS', time: 1)
