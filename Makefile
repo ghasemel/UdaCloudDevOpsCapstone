@@ -2,6 +2,8 @@
 setup:
 	# Create python virtualenv & source it
 	python3 -m venv .venv
+
+	# source it
 	. .venv/bin/activate
 
 refresh_requirements:
