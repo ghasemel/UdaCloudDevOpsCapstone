@@ -1,12 +1,10 @@
 pipeline {
-  agent {
-    docker {
-      image 'python:3.7.9'
-    }
-
-  }
+  agent none
   stages {
     stage('build') {
+      agent {
+        docker { image 'python:3.7.9' }
+      }
       steps {
         sh(script: '''
             pwd
