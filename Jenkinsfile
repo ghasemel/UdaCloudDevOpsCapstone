@@ -8,8 +8,7 @@ pipeline {
   stages {
     stage('setup-env') {
       steps {
-        sh script: '''
-pwd
+        sh script: '''pwd
 ls -la
 make setup
 . .venv/bin/activate
