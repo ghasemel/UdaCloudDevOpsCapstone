@@ -31,19 +31,16 @@ pipeline {
     }
 
     stage('lint') {
-//       agent {
-//         docker {
-//           image 'hadolint/hadolint'
-//         }
-//       }
-
       steps {
+        sh(script: '''
+          make lint-docker
+          ''', label: 'Dockerfile lint')
+
         //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
-          ls -la
           . ~/.venv/bin/activate
           make lint
-          ''', label: 'lint')
+          ''', label: 'app lint')
       }
     }
 

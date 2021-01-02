@@ -1,4 +1,4 @@
-FRO python:3.7.9
+FROM python:3.7.9
 
 ## Step 1:
 # Create a working directory
