@@ -6,12 +6,12 @@ pipeline {
 
   }
   stages {
-    stage('install') {
+    stage('setup-env') {
       steps {
         sh '''ls
-#python3 -m venv .venv
-#source .venv/bin/activate
-sudo make install'''
+python3 -m venv .venv
+. .venv/bin/activate
+make install'''
       }
     }
 
