@@ -12,11 +12,11 @@ pipeline {
 ls -lah
 make setup
 . .venv/bin/activate
-make install''', label: 'setup virtual environment')
+''', label: 'setup virtual environment')
       }
     }
 
-    stage('') {
+    stage('error') {
       steps {
         sh 'make install'
       }
