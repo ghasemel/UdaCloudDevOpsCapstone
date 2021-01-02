@@ -9,25 +9,32 @@ pipeline {
     stage('build') {
       steps {
         sh(script: '''
-        python --version
-        pwd
-ls -la
-make setup
-. .venv/bin/activate
-''', label: 'setup virtual environment')
+            python --version
+            cat /etc/os-release
+            pwd
+            ls -la
+            cd ..
+            pwd
+            ls -la
+            make setup
+            . .venv/bin/activate
+          ''',
+        label: 'setup virtual environment')
 
-        sh(script: '''ls -la
-. .venv/bin/activate
-make install''', label: 'install requirements')
+        sh(script: '''
+            ls -la
+            . .venv/bin/activate
+            make install''',
+          label: 'install requirements')
       }
     }
     stage('lint') {
       steps {
         sh(script: '''
-ls -la
-. .venv/bin/activate
-make lint
-''', label: 'lint')
+            ls -la
+            . .venv/bin/activate
+            make lint
+          ''', label: 'lint')
 
       }
     }
