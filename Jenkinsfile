@@ -9,17 +9,12 @@ pipeline {
     stage('build') {
       steps {
         sh(script: '''
-            python --version
-            cat /etc/os-release
-            pwd
-            ls -la
-            cd ..
             pwd
             ls -la
             make setup
             . .venv/bin/activate
-          ''',
-        label: 'setup virtual environment')
+           ''',
+           label: 'setup virtual environment')
 
         sh(script: '''
             ls -la
@@ -29,16 +24,20 @@ pipeline {
       }
     }
     stage('lint') {
+      agent {
+        docker { image 'hadolint/hadolint' }
+      }
       steps {
         sh(script: '''
             ls -la
             . .venv/bin/activate
             make lint
-          ''', label: 'lint')
+          ''',
+          label: 'lint')
+
+
 
       }
     }
-
-
   }
 }
