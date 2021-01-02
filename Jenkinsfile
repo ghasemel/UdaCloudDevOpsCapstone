@@ -1,43 +1,47 @@
 pipeline {
-  agent none
+  agent {
+    docker {
+      image 'python:3.7.9'
+      args '-u root:root'
+      //args '-v /tmp/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/~/.venv'
+    }
+  }
+
+
   stages {
     stage('build') {
-      agent {
-        docker {
-          image 'python:3.7.9-alpine'
-          //args '-v $HOME/cache/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/.venv'
-        }
-
-      }
       steps {
-        sleep(unit: 'HOURS', time: 1)
+        //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           pwd
           ls -la
           make setup
-          . .venv/bin/activate
+          . ~/.venv/bin/activate
           ''', label: 'setup virtual environment')
         sh(script: '''
             ls -la
-            . .venv/bin/activate
+            . ~/.venv/bin/activate
             make install''', label: 'install requirements')
 
+        sh(script: '''
+          wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
+          chmod 555 /bin/hadolint
+          ''', label: 'install hadolint')
       }
     }
 
     stage('lint') {
-      agent {
-        docker {
-          image 'hadolint/hadolint'
-        }
-
-      }
+//       agent {
+//         docker {
+//           image 'hadolint/hadolint'
+//         }
+//       }
 
       steps {
-        sleep(unit: 'HOURS', time: 1)
+        //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           ls -la
-          . .venv/bin/activate
+          . ~/.venv/bin/activate
           make lint
           ''', label: 'lint')
       }
