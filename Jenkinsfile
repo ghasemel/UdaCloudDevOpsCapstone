@@ -11,6 +11,7 @@ pipeline {
         sh '''pwd
 ls -la
 make setup
+. .venv/bin/activate
 make install'''
       }
     }
