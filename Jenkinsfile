@@ -44,5 +44,19 @@ pipeline {
       }
     }
 
+
+    stage('test') {
+      steps {
+        sh(script: '''
+          echo $UDA_DB_HOST_PROD
+          ''', label: 'Setup test database configuration')
+
+        //sleep(unit: 'HOURS', time: 1)
+//         sh(script: '''
+//           . ~/.venv/bin/activate
+//           make lint
+//           ''', label: 'app lint')
+      }
+    }
   }
 }
