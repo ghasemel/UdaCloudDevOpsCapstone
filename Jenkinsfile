@@ -1,7 +1,8 @@
 pipeline {
   agent {
-    node {
-      label 'raouf'
+    docker {
+      args '3.7.9'
+      image 'python'
     }
 
   }
