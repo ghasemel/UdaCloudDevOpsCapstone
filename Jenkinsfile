@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    stage('migration-test-database') {
+    stage('migrate-test-database') {
       steps {
         sh(script: '''
           echo "[postgresql-test]" > database.ini
@@ -65,13 +65,22 @@ pipeline {
 
     stage('test') {
       steps {
-
-
         //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           . ~/.venv/bin/activate
           make test
           ''', label: 'run tests')
+      }
+    }
+
+
+
+    stage('docker-image') {
+      steps {
+        //sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          ./run_docker.sh
+          ''', label: 'create docker image')
       }
     }
   }
