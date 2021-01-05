@@ -15,7 +15,7 @@ install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
 
-db_migration_init:
+migration_init:
 	# database initialization
 	python migration.py db init
 
@@ -24,7 +24,7 @@ test_db_migration:
 	python migration.py test migrate
 	python migration.py test upgrade
 
-db_migration:
+prod_db_migration:
 	# running the migrate command
 	python migration.py prod upgrade
 

@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'python:3.7.9'
-      args '-u root:root'
+      args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
       //args '-v /tmp/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/~/.venv'
     }
   }
@@ -75,9 +75,9 @@ pipeline {
 
 
 
-    stage('docker-image') {
+    stage('build-docker-image') {
       steps {
-        //sleep(unit: 'HOURS', time: 1)
+        sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           ./run_docker.sh
           ''', label: 'create docker image')
