@@ -19,11 +19,13 @@ db_migration_init:
 	# database initialization
 	python migration.py db init
 
-db_migration:
+test_db_migration:
 	# running the migrate command
 	python migration.py test migrate
-
 	python migration.py test upgrade
+
+db_migration:
+	# running the migrate command
 	python migration.py prod upgrade
 
 test:

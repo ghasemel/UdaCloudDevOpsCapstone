@@ -44,8 +44,7 @@ pipeline {
       }
     }
 
-
-    stage('test') {
+    stage('test-db-migration') {
       steps {
         sh(script: '''
           echo "[postgresql-test]" > database.ini
@@ -54,15 +53,26 @@ pipeline {
           echo "user=$UDA_DB_USER_TEST" >> database.ini
           echo "password=$UDA_DB_PASS_TEST" >> database.ini
           echo "port=$UDA_DB_PORT_TEST" >> database.ini
-          pwd
-          cat database.ini
           ''', label: 'Setup test database configuration')
 
         //sleep(unit: 'HOURS', time: 1)
-//         sh(script: '''
-//           . ~/.venv/bin/activate
-//           make lint
-//           ''', label: 'app lint')
+        sh(script: '''
+          . ~/.venv/bin/activate
+          make db_migration_init
+          make test_db_migration
+          ''', label: 'run db migration on test database')
+      }
+    }
+
+    stage('test') {
+      steps {
+
+
+        //sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          . ~/.venv/bin/activate
+          make test
+          ''', label: 'run tests')
       }
     }
   }
