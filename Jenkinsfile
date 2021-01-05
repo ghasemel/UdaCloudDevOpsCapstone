@@ -106,9 +106,9 @@ pipeline {
           echo "port=$UDA_DB_PORT_PROD" >> database.ini
           ''', label: 'set prod-database configuration')
 
-        sleep(unit: 'HOURS', time: 1)
+       //  sleep(unit: 'HOURS', time: 1)
         sh(script: '''
-          ./run_docker.sh
+          ./run_docker.sh build
           ''', label: 'create docker image')
       }
     }
