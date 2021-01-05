@@ -73,7 +73,24 @@ pipeline {
       }
     }
 
+    stage('migrate-prod-database') {
+      steps {
+         sh(script: '''
+          echo "[postgresql-prod]" > database.ini
+          echo "host=$UDA_DB_HOST_PROD" >> database.ini
+          echo "database=$UDA_DB_NAME" >> database.ini
+          echo "user=$UDA_DB_USER_PROD" >> database.ini
+          echo "password=$UDA_DB_PASS_PROD" >> database.ini
+          echo "port=$UDA_DB_PORT_PROD" >> database.ini
+          ''', label: 'set prod-database configuration')
 
+        // sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          . ~/.venv/bin/activate
+          make prod_db_migration
+          ''', label: 'run migration on prod database')
+      }
+    }
 
     stage('build-docker-image') {
 
@@ -97,24 +114,16 @@ pipeline {
           apt-get install -y docker-ce-cli
           ''', label: 'install prerequisites')
 
-        sh(script: '''
-          echo "[postgresql-prod]" > database.ini
-          echo "host=$UDA_DB_HOST_PROD" >> database.ini
-          echo "database=$UDA_DB_NAME" >> database.ini
-          echo "user=$UDA_DB_USER_PROD" >> database.ini
-          echo "password=$UDA_DB_PASS_PROD" >> database.ini
-          echo "port=$UDA_DB_PORT_PROD" >> database.ini
-          ''', label: 'set prod-database configuration')
-
         //  sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           ./run_docker.sh build
-          ''', label: 'create docker image')
+          ''', label: 'build docker image')
 
         sh(script: '''
           ./upload_docker.sh
           ''', label: 'upload docker image')
       }
     }
+
   }
 }
