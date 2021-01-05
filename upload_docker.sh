@@ -11,7 +11,11 @@ dockerpath="ghasemel/inventory:v1"
 # Step 2:  
 # Authenticate & tag
 echo "Docker ID and Image: $dockerpath"
-cat ~/my_password.txt | docker login --username ghasemel --password-stdin
+if [ -z "$DOCKER_REPO_TOKEN" ]; then
+  docker login --username ghasemel
+else
+  echo "$DOCKER_REPO_TOKEN" | docker login --username ghasemel --password-stdin
+fi
 
 # Step 3:
 # Push image to a docker repository
