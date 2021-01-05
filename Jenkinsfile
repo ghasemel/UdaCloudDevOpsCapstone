@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    stage('test-db-migration') {
+    stage('migration-test-database') {
       steps {
         sh(script: '''
           echo "[postgresql-test]" > database.ini
@@ -59,8 +59,14 @@ pipeline {
         sh(script: '''
           . ~/.venv/bin/activate
           make db_migration_init
+          ''', label: 'initiate database migration')
+
+
+        sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          . ~/.venv/bin/activate
           make test_db_migration
-          ''', label: 'run db migration on test database')
+          ''', label: 'run migration on test database')
       }
     }
 
