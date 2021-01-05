@@ -55,13 +55,6 @@ pipeline {
           echo "port=$UDA_DB_PORT_TEST" >> database.ini
           ''', label: 'Setup test database configuration')
 
-        //sleep(unit: 'HOURS', time: 1)
-        sh(script: '''
-          . ~/.venv/bin/activate
-          make db_migration_init
-          ''', label: 'initiate database migration')
-
-
         sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           . ~/.venv/bin/activate
