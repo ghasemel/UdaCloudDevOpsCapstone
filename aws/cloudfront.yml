@@ -1,0 +1,48 @@
+Description: >
+  Cloudfront distribution for UdaPeople.
+
+# how to run
+#  aws cloudformation deploy \
+#  --template-file aws/cloudfront.yml \
+#  --tags project=udacapstone \
+#  --stack-name "udacapstone-cloudfront" \
+#  --parameter-overrides WorkflowID="67wqteuq3ea76tu"
+
+Parameters:
+  WorkflowID:
+    Description: Unique identifier.
+    Type: String
+
+Resources:
+  # CloudFrontOriginAccessIdentity:
+  #   Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+  #   Properties:
+  #     CloudFrontOriginAccessIdentityConfig:
+  #       Comment: Origin Access Identity for Serverless Static Website
+
+  WebpageCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Sub "udacapstone-${WorkflowID}.s3.amazonaws.com"
+            Id: webpage
+            CustomOriginConfig:
+              "HTTPPort": "80"
+              "HTTPSPort": "443"
+              "OriginProtocolPolicy": "http-only"
+
+        Enabled: True
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: False
+          TargetOriginId: webpage
+          ViewerProtocolPolicy: allow-all
+
+Outputs:
+  WorkflowID:
+    Value: !Sub ${WorkflowID}
+    Description: URL for website hosted on S3
+    Export:
+      Name: WorkflowID

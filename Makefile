@@ -45,4 +45,4 @@ lint:
 	# W0703: Catching too general exception Exception (broad-except)
 	pylint --disable=R,C,W1203,W0611,W0703 --load-plugins=pylint_flask_sqlalchemy *.py
 
-all: install lint test
+all: install lint lint-docker test

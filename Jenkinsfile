@@ -1,15 +1,16 @@
 pipeline {
-  agent {
-    docker {
-      image 'python:3.7.9'
-      args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
-      //args '-v /tmp/UdacityDevOpsCapstone:/var/lib/jenkins/workspace/UdacityDevOpsCapstone_main/~/.venv'
-    }
-  }
 
+  agent none
 
   stages {
+    // ******************************
     stage('build') {
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
+        }
+      }
       steps {
         //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
@@ -18,20 +19,29 @@ pipeline {
           make setup
           . ~/.venv/bin/activate
           ''', label: 'setup virtual environment')
+
+        //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
             ls -la
             . ~/.venv/bin/activate
             make install''', label: 'install requirements')
+      }
+    }
 
+    // ******************************
+    stage('lint') {
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
+        }
+      }
+      steps {
         sh(script: '''
           wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
           chmod 555 /bin/hadolint
           ''', label: 'install hadolint')
-      }
-    }
 
-    stage('lint') {
-      steps {
         sh(script: '''
           make lint-docker
           ''', label: 'Dockerfile lint')
@@ -40,11 +50,19 @@ pipeline {
         sh(script: '''
           . ~/.venv/bin/activate
           make lint
-          ''', label: 'app lint')
+          ''', label: 'Python lint')
       }
     }
 
-    stage('migrate-test-database') {
+    // ******************************
+    stage('test') {
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
+        }
+      }
+
       steps {
         sh(script: '''
           echo "[postgresql-test]" > database.ini
@@ -59,21 +77,32 @@ pipeline {
         sh(script: '''
           . ~/.venv/bin/activate
           make test_db_migration
-          ''', label: 'run migration on test database')
-      }
-    }
+          ''', label: 'migrate test database')
 
-    stage('test') {
-      steps {
-        //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           . ~/.venv/bin/activate
           make test
           ''', label: 'run tests')
       }
+
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf *')
+            sh('rm -rf .pytest_cache')
+        }
+      }
     }
 
+    // ******************************
     stage('migrate-prod-database') {
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
+        }
+      }
+
       steps {
          sh(script: '''
           echo "[postgresql-prod]" > database.ini
@@ -90,10 +119,22 @@ pipeline {
           make prod_db_migration
           ''', label: 'run migration on prod database')
       }
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf *')
+        }
+      }
     }
 
+    // ******************************
     stage('build-docker-image') {
-
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
         sh(script: '''
           apt-get update
@@ -112,7 +153,7 @@ pipeline {
 
           apt-get update
           apt-get install -y docker-ce-cli
-          ''', label: 'install prerequisites')
+          ''', label: 'install docker-cli')
 
         //  sleep(unit: 'HOURS', time: 1)
         sh(script: '''
