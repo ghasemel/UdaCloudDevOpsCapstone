@@ -128,7 +128,7 @@ pipeline {
 //     }
 
     // ******************************
-    stage('build-docker-image') {
+    stage('build-image') {
       agent {
         docker {
           image 'python:3.7.9'
