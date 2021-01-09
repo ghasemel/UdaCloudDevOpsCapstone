@@ -155,7 +155,17 @@ pipeline {
           apt-get install -y docker-ce-cli
           ''', label: 'install docker-cli')
 
-        //  sleep(unit: 'HOURS', time: 1)
+
+//       steps {
+//          sh(script: '''
+//           echo "[postgresql-prod]" > database.ini
+//           echo "host=$UDA_DB_HOST_PROD" >> database.ini
+//           echo "database=$UDA_DB_NAME" >> database.ini
+//           echo "user=$UDA_DB_USER_PROD" >> database.ini
+//           echo "password=$UDA_DB_PASS_PROD" >> database.ini
+//           echo "port=$UDA_DB_PORT_PROD" >> database.ini
+//           ''', label: 'set prod-database configuration')
+
         sh(script: '''
           ./run_docker.sh build
           ''', label: 'build docker image')

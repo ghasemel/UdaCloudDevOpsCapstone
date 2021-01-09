@@ -9,6 +9,11 @@ CONTAINER_NAME="inventory$(date +"%y%m%d-%H%M%S")"
 # Step 1:
 # Build image and add a descriptive tag
 docker build --tag $REPO .
+echo $?
+
+if [[ $? != 0 ]]; then
+  exit 1
+fi
 
 # Step 2: 
 # List docker images

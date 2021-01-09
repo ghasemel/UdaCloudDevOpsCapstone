@@ -14,7 +14,6 @@ COPY models.py .
 COPY requirements.txt .
 COPY migrations .
 COPY database.ini .
-#COPY model_data model_data/
 
 
 ## Step 3:
