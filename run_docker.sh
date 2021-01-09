@@ -9,10 +9,11 @@ CONTAINER_NAME="inventory$(date +"%y%m%d-%H%M%S")"
 # Step 1:
 # Build image and add a descriptive tag
 docker build --tag $REPO .
-echo $?
+result=$?
 
-if [[ $? != 0 ]]; then
-  exit 1
+if [ $result -ne 0 ]; then
+  echo "raouf"
+  exit 125
 fi
 
 # Step 2: 

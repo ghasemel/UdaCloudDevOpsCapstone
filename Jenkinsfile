@@ -131,31 +131,11 @@ pipeline {
     stage('build-image') {
       agent {
         docker {
-          image 'python:3.7.9'
+          image 'eugenmayer/docker-client'
           args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
-        sh(script: '''
-          apt-get update
-          apt-get install -y \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg-agent \
-            software-properties-common
-          curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-
-          add-apt-repository \
-           "deb [arch=amd64] https://download.docker.com/linux/debian \
-           $(lsb_release -cs) \
-           stable"
-
-          apt-get update
-          apt-get install -y docker-ce-cli
-          ''', label: 'install docker-cli')
-
-
 //       steps {
 //          sh(script: '''
 //           echo "[postgresql-prod]" > database.ini
@@ -166,6 +146,7 @@ pipeline {
 //           echo "port=$UDA_DB_PORT_PROD" >> database.ini
 //           ''', label: 'set prod-database configuration')
 
+        //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
           ./run_docker.sh build
           ''', label: 'build docker image')
