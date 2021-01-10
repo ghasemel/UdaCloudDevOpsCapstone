@@ -4,7 +4,7 @@
 #  --template-file aws/infra-eks.yml \
 #  --tags project=udacapstone \
 #  --stack-name "udacapstone-infra" \
-#  --parameter-overrides ID="67wqteuq3ea76tu"
+#  --parameter-overrides ID="45ea76tu"
 
 Description: >
   UdaInventory backend stack.
@@ -15,6 +15,7 @@ Parameters:
     Type: String
 
 Resources:
+
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -39,21 +40,9 @@ Resources:
         arn:aws:iam::867975079432:role/uda-eks-service-role
       ResourcesVpcConfig:
         SecurityGroupIds:
-          - Ref: InstanceSecurityGroup
+          - !GetAtt InstanceSecurityGroup.GroupId
         SubnetIds:
           - subnet-034bd6e22be82c212
           - subnet-0440cc0249bb8a376
           - subnet-073cdb8f1f79d82ab
           - subnet-07c942c9d836c1f44
-
- # EC2Instance:
-#    Type: AWS::EC2::Instance
- #   Properties:
-  #    InstanceType: t2.micro
-   #   SecurityGroups:
-    #    - Ref: InstanceSecurityGroup
-     # KeyName: udacity-key
-#      ImageId: ami-07dd19a7900a1f049
- #     Tags:
-  #      - Key: Name
-   #       Value: !Sub backend-${ID}
