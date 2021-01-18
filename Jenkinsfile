@@ -157,5 +157,42 @@ pipeline {
         }
       }
     }
+
+    // ******************************
+    stage('deploy') {
+      agent {
+        docker {
+          image 'weaveworks/eksctl:0.36.0'
+          args '-u root:root'
+        }
+      }
+
+      steps {
+        sleep(unit: 'HOURS', time: 1)
+
+         sh(script: '''
+          eksctl create cluster \
+                --name inventory-cluster-${BUILD_NUMBER} \
+                --region us-west-2 \
+                --with-oidc \
+                --ssh-access \
+                --ssh-public-key udacity-key \
+                --managed
+          ''', label: 'set prod-database configuration')
+
+        // sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          . ~/.venv/bin/activate
+          make prod_db_migration
+          ''', label: 'run migration on prod database')
+      }
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf *')
+            sh('rm -rf .pytest_cache')
+        }
+      }
+    }
   }
 }
