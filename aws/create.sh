@@ -35,18 +35,18 @@ kubectl delete pod inventory
 kubectl delete ns my-namespace
 
 
+kubectl get pods --all-namespaces -o wide
 
 ########
 kubectl create namespace my-namespace
 kubectl apply -f service.yaml
 
-kubectl get pods --all-namespaces -o wide
 kubectl get pods -n my-namespace
 kubectl get all -n my-namespace
 
-kubectl exec -it pod/my-deployment-675f769895-h28f5 -n my-namespace -- /bin/bash
-kubectl exec -it pod/my-deployment-675f769895-949ld -n my-namespace -- /bin/bash
-kubectl exec -it pod/my-deployment-675f769895-j7dk5 -n my-namespace -- /bin/bash
+kubectl exec -it pod/my-deployment-675f769895-lct9b -n my-namespace -- /bin/bash
+kubectl exec -it pod/my-deployment-675f769895-pzklx -n my-namespace -- /bin/bash
+kubectl exec -it pod/my-deployment-675f769895-z27nj -n my-namespace -- /bin/bash
 
 
 

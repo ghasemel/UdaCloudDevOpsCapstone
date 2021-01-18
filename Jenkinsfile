@@ -162,7 +162,7 @@ pipeline {
     stage('deploy') {
       agent {
         docker {
-          image 'weaveworks/eksctl:0.36.0'
+          image 'bitnami/kubectl'
           args '-u root:root'
         }
       }
