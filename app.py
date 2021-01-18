@@ -8,6 +8,8 @@ import sys
 from config import Config
 
 
+logging.basicConfig(filename='app.log', level=logging.DEBUG)
+
 mode = 'test'
 if len(sys.argv) > 1:
     mode = sys.argv[1]

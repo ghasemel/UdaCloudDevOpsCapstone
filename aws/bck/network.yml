@@ -164,7 +164,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref myVPC
-      GroupName: !Sub UdaInventory-123qwe123
+      GroupName: !Sub UdaInventory
       GroupDescription: Allow port 22 and port 8000.
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -175,22 +175,6 @@ Resources:
           FromPort: 8000
           ToPort: 8000
           CidrIp: 0.0.0.0/0
-
-  EKSCluster:
-    Type: AWS::EKS::Cluster
-    Properties:
-      Name: prod
-      Version: '1.18'
-      RoleArn: >-
-        arn:aws:iam::867975079432:role/uda-eks-service-role
-      ResourcesVpcConfig:
-        SecurityGroupIds:
-          - !GetAtt InstanceSecurityGroup.GroupId
-        SubnetIds:
-          - !Ref mySubnet1
-          - !Ref mySubnet2
-          - !Ref mySubnet3
-          - !Ref mySubnet4
 
 Outputs:
   VPC:
@@ -212,25 +196,32 @@ Outputs:
       Name: !Sub ${myEnvName}-PUB-NETS
 
   Subnet1:
-    Description: A reference to the public subnet in the 1st Availability Zone
+    Description: A reference to the subnet 1 in the 1st Availability Zone
     Value: !Ref mySubnet1
     Export:
       Name: !Sub ${myEnvName}-SN1
 
   Subnet2:
-    Description: A reference to the public subnet in the 2nd Availability Zone
+    Description: A reference to the subnet 2 in the 2nd Availability Zone
     Value: !Ref mySubnet2
     Export:
       Name: !Sub ${myEnvName}-SN2
 
   Subnet3:
-    Description: A reference to the private subnet in the 1st Availability Zone
+    Description: A reference to the subnet 3 in the 3rd Availability Zone
     Value: !Ref mySubnet3
     Export:
       Name: !Sub ${myEnvName}-SN3
 
   Subnet4:
-    Description: A reference to the private subnet in the 2nd Availability Zone
+    Description: A reference to the subnet 4 in the 4th Availability Zone
     Value: !Ref mySubnet4
     Export:
       Name: !Sub ${myEnvName}-SN4
+
+  SecurityGroup:
+    Description: A reference to the security group
+    Value: !Ref InstanceSecurityGroup
+    Export:
+      Name: !Sub ${myEnvName}-SecGrp
+
