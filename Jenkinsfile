@@ -95,39 +95,6 @@ pipeline {
     }
 
     // ******************************
-//     stage('migrate-prod-database') {
-//       agent {
-//         docker {
-//           image 'python:3.7.9'
-//           args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
-//         }
-//       }
-//
-//       steps {
-//          sh(script: '''
-//           echo "[postgresql-prod]" > database.ini
-//           echo "host=$UDA_DB_HOST_PROD" >> database.ini
-//           echo "database=$UDA_DB_NAME" >> database.ini
-//           echo "user=$UDA_DB_USER_PROD" >> database.ini
-//           echo "password=$UDA_DB_PASS_PROD" >> database.ini
-//           echo "port=$UDA_DB_PORT_PROD" >> database.ini
-//           ''', label: 'set prod-database configuration')
-//
-//         // sleep(unit: 'HOURS', time: 1)
-//         sh(script: '''
-//           . ~/.venv/bin/activate
-//           make prod_db_migration
-//           ''', label: 'run migration on prod database')
-//       }
-//       post {
-//         always {
-//             echo 'clean up workspace'
-//             sh('rm -rf *')
-//         }
-//       }
-//     }
-
-    // ******************************
     stage('build-image') {
       agent {
         docker {
@@ -156,5 +123,39 @@ pipeline {
       }
     }
 
+
+    // ******************************
+    stage('migrate-database') {
+      agent {
+        docker {
+          image 'python:3.7.9'
+          args '-u root:root -v /tmp/UdacityDevOpsCapstone:/root/.venv'
+        }
+      }
+
+      steps {
+         sh(script: '''
+          echo "[postgresql-prod]" > database.ini
+          echo "host=$UDA_DB_HOST_PROD" >> database.ini
+          echo "database=$UDA_DB_NAME" >> database.ini
+          echo "user=$UDA_DB_USER_PROD" >> database.ini
+          echo "password=$UDA_DB_PASS_PROD" >> database.ini
+          echo "port=$UDA_DB_PORT_PROD" >> database.ini
+          ''', label: 'set prod-database configuration')
+
+        // sleep(unit: 'HOURS', time: 1)
+        sh(script: '''
+          . ~/.venv/bin/activate
+          make prod_db_migration
+          ''', label: 'run migration on prod database')
+      }
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf *')
+            sh('rm -rf .pytest_cache')
+        }
+      }
+    }
   }
 }
