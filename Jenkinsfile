@@ -230,6 +230,7 @@ pipeline {
 
           ''', label: 'deploy pods')
 
+        sleep(unit: 'SECONDS', time: 30)
 
         sh(script: '''
           namespace="my-namespace-${BUILD_NUMBER}"
@@ -266,12 +267,10 @@ pipeline {
           apt install -y curl
           ''', label: 'install prerequisites')
 
-        sleep(unit: 'MINUTES', time: 2)
-
         sh(script: '''
           loadbalancer_url=$(curl -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" --request GET https://api.memstash.io/values/loadbalancer_url)
           echo "retrieved loadBalancer url: ${loadbalancer_url}"
-          curl -s $loadbalancer_url/health | grep -i "\"status\": \"ok\""
+          curl -s "${loadbalancer_url}/health"
           ''', label: 'health endpoint')
       }
 
@@ -327,7 +326,7 @@ pipeline {
           kubectl get pods --all-namespaces -o wide
 
           old=${BUILD_NUMBER} - 1
-          echo "old-namespace: {$old}"
+          echo "old-namespace: ${old}"
           namespace="my-namespace-$old"
           kubectl delete ns $namespace
 
