@@ -162,43 +162,81 @@ pipeline {
     stage('deploy') {
       agent {
         docker {
-          image 'amazon/aws-cli'
+          image 'ubuntu:18.04'
           args '-u root:root'
         }
       }
 
       steps {
+        sh(script: '''
+          apt update -y
+          apt install -y curl unzip less grep
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
+          aws --version
+
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+          aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].{Instance:InstanceId}' \
+            --output json
+
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          mv ./kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          mv /tmp/eksctl /usr/local/bin
+          eksctl version
+          ''', label: 'install prerequisites')
+
+        //sleep(unit: 'HOURS', time: 1)
+
 
         sh(script: '''
-          echo test
-          ''', label: 'test step')
+          cluster_name="inventory-cluster"
+          eks_not_exist=$(aws cloudformation describe-stacks --stack-name eksctl-$cluster_name-cluster --query 'Stacks[*].StackId' 2>&1 | grep "does not exist" | wc -l)
+          if [ $eks_not_exist -eq 1 ]; then
+            eksctl create cluster \
+                  --name $cluster_name \
+                  --region us-west-2 \
+                  --with-oidc \
+                  --ssh-access \
+                  --ssh-public-key udacity-key \
+                  --managed
+          else
+            # config kubectl for eks
+            aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $cluster_name
+          fi
 
-        sleep(unit: 'HOURS', time: 1)
+          # list all pods
+          kubectl get pods --all-namespaces -o wide
+          ''', label: 'install kubernetes cluster - eks')
 
+          // -${BUILD_NUMBER}
+        sh(script: '''
+          cd aws
+          namespace="my-namespace-${BUILD_NUMBER}"
+          sed s/%MY_NAMESPACE%/$namespace/g \
+            service_template.yaml > service.yaml
 
-         sh(script: '''
-          eksctl create cluster \
-                --name inventory-cluster \
-                --region us-west-2 \
-                --with-oidc \
-                --ssh-access \
-                --ssh-public-key udacity-key \
-                --managed
-          ''', label: 'set prod-database configuration')
+          kubectl create namespace $namespace
+          kubectl apply -f service.yaml
 
-        // -${BUILD_NUMBER}
-
+          ''', label: 'create pods')
 
         sh(script: '''
           ''', label: 'run migration on prod database')
       }
-      //post {
-        //always {
-            //echo 'clean up workspace'
-            //sh('rm -rf *')
-            //sh('rm -rf .pytest_cache')
-        //}
-      //}
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf * || exit 0')
+        }
+      }
     }
   }
 }
