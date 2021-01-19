@@ -162,12 +162,19 @@ pipeline {
     stage('deploy') {
       agent {
         docker {
-          image 'bitnami/kubectl:1.19'
+          image 'amazon/aws-cli'
           args '-u root:root'
         }
       }
 
       steps {
+
+        sh(script: '''
+          echo test
+          ''', label: 'test step')
+
+        sleep(unit: 'HOURS', time: 1)
+
 
          sh(script: '''
           eksctl create cluster \
@@ -180,19 +187,18 @@ pipeline {
           ''', label: 'set prod-database configuration')
 
         // -${BUILD_NUMBER}
-        sleep(unit: 'HOURS', time: 1)
+
 
         sh(script: '''
-
           ''', label: 'run migration on prod database')
       }
-      post {
-        always {
-            echo 'clean up workspace'
-            sh('rm -rf *')
-            sh('rm -rf .pytest_cache')
-        }
-      }
+      //post {
+        //always {
+            //echo 'clean up workspace'
+            //sh('rm -rf *')
+            //sh('rm -rf .pytest_cache')
+        //}
+      //}
     }
   }
 }
