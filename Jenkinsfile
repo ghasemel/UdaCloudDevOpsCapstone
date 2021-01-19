@@ -271,8 +271,68 @@ pipeline {
         sh(script: '''
           loadbalancer_url=$(curl -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" --request GET https://api.memstash.io/values/loadbalancer_url)
           echo "retrieved loadBalancer url: ${loadbalancer_url}"
-          curl -s --request GET "${loadbalancer_url}/health" | grep -i "\"status\": \"ok\""
+          curl -s $loadbalancer_url/health | grep -i "\"status\": \"ok\""
           ''', label: 'health endpoint')
+      }
+
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf * || exit 0')
+        }
+      }
+    }
+
+    // ******************************
+    stage('cleanup') {
+      agent {
+        docker {
+          image 'ubuntu:18.04'
+          args '-u root:root'
+        }
+      }
+
+      steps {
+        sh(script: '''
+          apt update -y
+          apt install -y curl unzip less grep jq
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
+          aws --version
+
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+          aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].{Instance:InstanceId}' \
+            --output json
+
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          mv ./kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          mv /tmp/eksctl /usr/local/bin
+          eksctl version
+
+          # config kubectl for eks if cluster already exist
+          cluster_name="inventory-cluster"
+          aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $cluster_name
+          ''', label: 'install prerequisites')
+
+        sh(script: '''
+          # list all pods
+          kubectl get pods --all-namespaces -o wide
+
+          old=${BUILD_NUMBER} - 1
+          echo "old-namespace: {$old}"
+          namespace="my-namespace-$old"
+          kubectl delete ns $namespace
+
+          ''', label: 'cleanup old namespace')
+
       }
 
       post {
