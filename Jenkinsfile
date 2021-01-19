@@ -234,6 +234,9 @@ pipeline {
 
         sh(script: '''
           namespace="my-namespace-${BUILD_NUMBER}"
+
+          kubectl get all -n $namespace
+
           loadbalancer_url=$(kubectl get services -n $namespace -o json | jq '.items[].status.loadBalancer.ingress[0].hostname' | cut -d '"' -f 2)
           loadbalancer_url="http://${loadbalancer_url}:8000"
           echo $url
@@ -270,7 +273,7 @@ pipeline {
         sh(script: '''
           loadbalancer_url=$(curl -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" --request GET https://api.memstash.io/values/loadbalancer_url)
           echo "retrieved loadBalancer url: ${loadbalancer_url}"
-          curl -s "${loadbalancer_url}/health"
+          #curl -s "${loadbalancer_url}/health"
           ''', label: 'health endpoint')
       }
 
