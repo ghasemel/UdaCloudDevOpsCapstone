@@ -208,7 +208,7 @@ pipeline {
                   --ssh-public-key udacity-key \
                   --managed
           else
-            # config kubectl for eks
+            # config kubectl for eks if cluster already exist
             aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $cluster_name
           fi
 
@@ -218,7 +218,7 @@ pipeline {
 
         sh(script: '''
           cd aws
-          export namespace="my-namespace-${BUILD_NUMBER}"
+          namespace="my-namespace-${BUILD_NUMBER}"
 
           # create pods template
           sed s/%MY_NAMESPACE%/$namespace/g \
@@ -232,14 +232,15 @@ pipeline {
 
 
         sh(script: '''
-          echo $namespace
-          url=$(kubectl get services -n my-namespace-213 -o json | jq '.items[].status.loadBalancer.ingress[0].hostname')
+          namespace="my-namespace-${BUILD_NUMBER}"
+          loadbalancer_url=$(kubectl get services -n $namespace -o json | jq '.items[].status.loadBalancer.ingress[0].hostname' | cut -d '"' -f 2)
+          loadbalancer_url="http://${loadbalancer_url}:8000"
           echo $url
 
           curl -H "Content-Type: text/plain" \
            -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" \
            --request PUT \
-           --data $url https://api.memstash.io/values/loadbalancer_url
+           --data $loadbalancer_url https://api.memstash.io/values/loadbalancer_url
         ''', label: 'save service endpoint')
       }
       post {
@@ -263,11 +264,17 @@ pipeline {
         sh(script: '''
           apt update -y
           apt install -y curl
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          ''', label: 'curl to health endpoint')
+          ''', label: 'install prerequisites')
 
-        //sleep(unit: 'HOURS', time: 1)
+        sleep(unit: 'MINUTES', time: 2)
+
+        sh(script: '''
+          loadbalancer_url=$(curl -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" --request GET https://api.memstash.io/values/loadbalancer_url)
+          echo "retrieved loadBalancer url: ${loadbalancer_url}"
+          curl -s --request GET "${loadbalancer_url}/health" | grep -i "\"status\": \"ok\""
+          ''', label: 'health endpoint')
       }
+
       post {
         always {
             echo 'clean up workspace'
