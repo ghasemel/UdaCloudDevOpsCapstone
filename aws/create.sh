@@ -41,6 +41,7 @@ kubectl get pods --all-namespaces -o wide
 kubectl create namespace my-namespace
 kubectl apply -f service.yaml
 
+kubectl get services -n my-namespace
 kubectl get pods -n my-namespace
 kubectl get all -n my-namespace
 
@@ -48,10 +49,5 @@ kubectl exec -it pod/my-deployment-675f769895-lct9b -n my-namespace -- /bin/bash
 kubectl exec -it pod/my-deployment-675f769895-pzklx -n my-namespace -- /bin/bash
 kubectl exec -it pod/my-deployment-675f769895-z27nj -n my-namespace -- /bin/bash
 
-
-
-
 kubectl -n my-namespace port-forward inventory 8000:80
-
-
 kubectl get svc  -n my-namespace

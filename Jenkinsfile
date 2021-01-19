@@ -170,7 +170,7 @@ pipeline {
       steps {
         sh(script: '''
           apt update -y
-          apt install -y curl unzip less grep
+          apt install -y curl unzip less grep jq
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           ./aws/install
@@ -216,20 +216,57 @@ pipeline {
           kubectl get pods --all-namespaces -o wide
           ''', label: 'install kubernetes cluster - eks')
 
-          // -${BUILD_NUMBER}
         sh(script: '''
           cd aws
-          namespace="my-namespace-${BUILD_NUMBER}"
+          export namespace="my-namespace-${BUILD_NUMBER}"
+
+          # create pods template
           sed s/%MY_NAMESPACE%/$namespace/g \
             service_template.yaml > service.yaml
 
           kubectl create namespace $namespace
           kubectl apply -f service.yaml
+          kubectl get all -n $namespace
 
-          ''', label: 'create pods')
+          ''', label: 'deploy pods')
+
 
         sh(script: '''
-          ''', label: 'run migration on prod database')
+          echo $namespace
+          url=$(kubectl get services -n my-namespace-213 -o json | jq '.items[].status.loadBalancer.ingress[0].hostname')
+          echo $url
+
+          curl -H "Content-Type: text/plain" \
+           -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" \
+           --request PUT \
+           --data $url https://api.memstash.io/values/loadbalancer_url
+        ''', label: 'save service endpoint')
+      }
+      post {
+        always {
+            echo 'clean up workspace'
+            sh('rm -rf * || exit 0')
+        }
+      }
+    }
+
+    // ******************************
+    stage('smoke-test') {
+      agent {
+        docker {
+          image 'ubuntu:18.04'
+          args '-u root:root'
+        }
+      }
+
+      steps {
+        sh(script: '''
+          apt update -y
+          apt install -y curl
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          ''', label: 'curl to health endpoint')
+
+        //sleep(unit: 'HOURS', time: 1)
       }
       post {
         always {
