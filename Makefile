@@ -6,7 +6,7 @@ setup:
 	# source it
 	. ~/.venv/bin/activate
 
-refresh_requirements:
+update_requirements:
 	# to create/update the file
 	python -m pip freeze > requirements.txt
 
