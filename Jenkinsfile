@@ -14,15 +14,15 @@ pipeline {
       steps {
         //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
-          pwd
-          ls -la
+          #pwd
+          #ls -la
           make setup
           . ~/.venv/bin/activate
           ''', label: 'setup virtual environment')
 
         //sleep(unit: 'HOURS', time: 1)
         sh(script: '''
-            ls -la
+            #ls -la
             . ~/.venv/bin/activate
             make install''', label: 'install requirements')
       }
