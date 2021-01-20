@@ -214,7 +214,7 @@ pipeline {
 
           # list all pods
           kubectl get pods --all-namespaces -o wide
-          ''', label: 'deploy cluster - eks')
+          ''', label: 'deploy cluster using eksctl')
 
         sh(script: '''
           cd aws

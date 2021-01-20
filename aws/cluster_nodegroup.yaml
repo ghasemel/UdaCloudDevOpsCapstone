@@ -1,0 +1,114 @@
+TemplateBody:
+  AWSTemplateFormatVersion: 2010-09-09
+  Description: 'EKS Managed Nodes (SSH access: true) [created by eksctl]'
+  Mappings:
+    ServicePrincipalPartitionMap:
+      aws:
+        EC2: ec2.amazonaws.com
+        EKS: eks.amazonaws.com
+        EKSFargatePods: eks-fargate-pods.amazonaws.com
+      aws-cn:
+        EC2: ec2.amazonaws.com.cn
+        EKS: eks.amazonaws.com
+        EKSFargatePods: eks-fargate-pods.amazonaws.com
+      aws-us-gov:
+        EC2: ec2.amazonaws.com
+        EKS: eks.amazonaws.com
+        EKSFargatePods: eks-fargate-pods.amazonaws.com
+  Resources:
+    LaunchTemplate:
+      Type: 'AWS::EC2::LaunchTemplate'
+      Properties:
+        LaunchTemplateData:
+          BlockDeviceMappings:
+            - DeviceName: /dev/xvda
+              Ebs:
+                VolumeSize: 80
+                VolumeType: gp2
+          KeyName: udacity-key
+          MetadataOptions:
+            HttpPutResponseHopLimit: 2
+            HttpTokens: optional
+          SecurityGroupIds:
+            - !ImportValue 'eksctl-inventory-cluster-cluster::ClusterSecurityGroupId'
+            - !Ref SSH
+          TagSpecifications:
+            - ResourceType: instance
+              Tags:
+                - Key: Name
+                  Value: inventory-cluster-ng-009dac60-Node
+                - Key: alpha.eksctl.io/nodegroup-name
+                  Value: ng-009dac60
+                - Key: alpha.eksctl.io/nodegroup-type
+                  Value: managed
+        LaunchTemplateName: !Sub '${AWS::StackName}'
+    ManagedNodeGroup:
+      Type: 'AWS::EKS::Nodegroup'
+      Properties:
+        AmiType: AL2_x86_64
+        ClusterName: inventory-cluster
+        InstanceTypes:
+          - m5.large
+        Labels:
+          alpha.eksctl.io/cluster-name: inventory-cluster
+          alpha.eksctl.io/nodegroup-name: ng-009dac60
+        LaunchTemplate:
+          Id: !Ref LaunchTemplate
+        NodeRole: !GetAtt
+          - NodeInstanceRole
+          - Arn
+        NodegroupName: ng-009dac60
+        ScalingConfig:
+          DesiredSize: 2
+          MaxSize: 2
+          MinSize: 2
+        Subnets: !Split
+          - ','
+          - !ImportValue 'eksctl-inventory-cluster-cluster::SubnetsPublic'
+        Tags:
+          alpha.eksctl.io/nodegroup-name: ng-009dac60
+          alpha.eksctl.io/nodegroup-type: managed
+    NodeInstanceRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+            - Action:
+                - 'sts:AssumeRole'
+              Effect: Allow
+              Principal:
+                Service:
+                  - !FindInMap
+                    - ServicePrincipalPartitionMap
+                    - !Ref 'AWS::Partition'
+                    - EC2
+          Version: 2012-10-17
+        ManagedPolicyArns:
+          - !Sub >-
+            arn:${AWS::Partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+          - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy'
+        Path: /
+        Tags:
+          - Key: Name
+            Value: !Sub '${AWS::StackName}/NodeInstanceRole'
+    SSH:
+      Type: 'AWS::EC2::SecurityGroup'
+      Properties:
+        GroupDescription: Allow SSH access
+        GroupName: !Sub '${AWS::StackName}-remoteAccess'
+        SecurityGroupIngress:
+          - CidrIp: 0.0.0.0/0
+            FromPort: 22
+            IpProtocol: tcp
+            ToPort: 22
+          - CidrIpv6: '::/0'
+            FromPort: 22
+            IpProtocol: tcp
+            ToPort: 22
+        Tags:
+          - Key: Name
+            Value: !Sub '${AWS::StackName}/SSH'
+        VpcId: !ImportValue 'eksctl-inventory-cluster-cluster::VPC'
+StagesAvailable:
+  - Original
+  - Processed
