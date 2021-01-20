@@ -238,14 +238,13 @@ pipeline {
           kubectl get all -n $namespace
 
           loadbalancer_url=$(kubectl get services -n $namespace -o json | jq '.items[].status.loadBalancer.ingress[0].hostname' | cut -d '"' -f 2)
-          loadbalancer_url="${loadbalancer_url}"
-          echo $url
+          echo $loadbalancer_url
 
           curl -H "Content-Type: text/plain" \
            -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" \
            --request PUT \
            --data $loadbalancer_url https://api.memstash.io/values/loadbalancer_url
-        ''', label: 'save service endpoint')
+        ''', label: 'save loadbalancer url')
       }
       post {
         always {
@@ -271,21 +270,21 @@ pipeline {
           ''', label: 'install prerequisites')
 
 
-        sleep(unit: 'MINUTES', time: 60)
+        //sleep(unit: 'MINUTES', time: 5)
         sh(script: '''
           loadbalancer_url=$(curl -H "token: 452a712b-1375-4192-82e6-8e725b12dd9a" --request GET https://api.memstash.io/values/loadbalancer_url)
           echo "retrieved loadBalancer url: ${loadbalancer_url}"
-          curl http://${loadbalancer_url}:8000/health | grep -i "\"status\": \"ok\""
-          echo "here"
+          curl http://${loadbalancer_url}:8000/health > result.txt
+          grep -i '"status": "ok"' result.txt
           ''', label: 'health endpoint')
       }
 
-      post {
-        always {
-            echo 'clean up workspace'
-            sh('rm -rf * || exit 0')
-        }
-      }
+//       post {
+//         always {
+//             echo 'clean up workspace'
+//             sh('rm -rf * || exit 0')
+//         }
+//       }
     }
 
     // ******************************
