@@ -2,7 +2,7 @@ FROM python:3.7.9
 
 ## Step 1:
 # Create a working directory
-WORKDIR /opt/inventory
+WORKDI /opt/inventory
 
 ## Step 2:
 # Copy source code to working directory
