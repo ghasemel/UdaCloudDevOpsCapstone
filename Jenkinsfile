@@ -330,10 +330,13 @@ pipeline {
           # list all pods
           kubectl get pods --all-namespaces -o wide
 
-          old=$(($BUILD_NUMBER-1))
-          echo "old-namespace: ${old}"
-          namespace="my-namespace-$old"
-          kubectl delete ns $namespace
+          current_namespace="my-namespace-${BUILD_NUMBER}"
+          all_name_spaces=$(kubectl get services --all-namespaces -o wide -o json | jq '.items[].metadata.namespace' | grep my-namespace | cut -d '"' -f 2)
+          for n in $all_name_spaces; do
+            if [ ${n} != ${current_namespace} ]; then
+                kubectl delete ns $n
+            fi
+          done
 
           ''', label: 'cleanup old namespace')
 
